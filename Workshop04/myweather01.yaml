@@ -36,7 +36,7 @@ spec:
          app.kubernetes.io/name: weather-pod
    strategy:
       type: RollingUpdate
-      rollingupdate:
+      rollingUpdate:
          maxSurge: 1
          maxUnavailable: 1
    template:
@@ -54,6 +54,21 @@ spec:
            ports:
            - name: weather-port
              containerPort: 3000
+           readinessProbe:
+            httpGet:
+               path: /ready
+               port: weather-port
+           livenessProbe:
+            httpGet:
+               path: /health
+               port: weather-port           
+           resources:
+            requests:
+               cpu: 100m
+               memory: 16m
+#            limits:
+#              cpu: 150m
+#               memory: 32m
            env:
            - name: APP_ID
              valueFrom:
@@ -86,5 +101,25 @@ spec:
       app.kubernetes.io/name: weather-pod
 
    ports:
-   - port: 80
+   - port: 3000
      targetPort: weather-port
+
+---
+kind: Ingress
+apiVersion: networking.k8s.io/v1beta1
+
+metadata:
+    name: weather-ing
+    namespace: myweatherns
+    labels:
+        app: weather-app
+
+spec:
+    rules:
+    - http:
+        paths:
+        - path: /
+          backend:
+            serviceName: weather-svc
+            servicePort: 3000
+

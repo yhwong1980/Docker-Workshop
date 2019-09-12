@@ -1,0 +1,27 @@
+---
+kind: VirtualService
+apiVersion: networking.istio.io/v1alpha3
+
+metadata:
+  name: weather-vs
+  namespace: weatherns
+  labels:
+    app: weather-app
+  
+spec:
+  selector:
+    gateways: 
+    - weather-gw
+    hosts:
+    - '*'
+    http:
+    - match:
+      - uri:
+        prefix: /
+      route:
+      - destination:
+          hosts: weather-svc.weatherns.svc.cluster.local
+    - route:
+      - destination:
+          hosts: fortune-svc.weatherns.svc.cluster.local
+  
